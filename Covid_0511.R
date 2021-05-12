@@ -27,10 +27,9 @@ sum(is.na(covid$HDI))
 #HDI feature has 6202 missing values
 #Thus, we create a data set with fully completely observed samples
 
-covid_clean = na.omit(covid)
-
-covid_clean <-  covid_clean %>%
-  select(HDI,TC,TD,STI,GDPCAP)
+covid = na.omit(covid)
+covid_clean = covid[,c('HDI','TC','TD','STI','GDPCAP')]
+  
 
 dim(covid_clean)
 sum(is.na(covid_clean))
@@ -58,7 +57,11 @@ grid =10^seq (10,-2, length =100)
 #split training set and testing set; 
 
 
-for (i in 1:5) {
+length <- 10
+mse_ridge <- rep(NA, length)
+mse_lasso <- rep(NA, length)
+
+for (i in 1:10) {
   
   set.seed(i)
   train  = sample (1: nrow(x), nrow(x)*0.7)
@@ -91,13 +94,13 @@ for (i in 1:5) {
   #use cross-validation to choose the tuning parameter ??.
   cv.out_lasso = cv.glmnet(x[train,],y[train],alpha = 1)
   plot(cv.out_lasso)
-  bestlam_lasso =cv.out_lasso$lambda.min
+  bestlam_lasso = cv.out_lasso$lambda.min
   bestlam_lasso # 0.001006106
   
   # The test MSE associated with this value of ??.
   
   lasso.pred=predict(lasso.mod, s = bestlam_lasso , newx = x[test,])
-  mse_lasso[i] = mean((lasso.pred -y.test)^2) #2.121526
+  mse_lasso[i] = mean((lasso.pred - y.test)^2) #2.121526
   
 }
 
@@ -114,8 +117,8 @@ lasso.coef=coef(lasso.out)[,1]
 lasso.coef[lasso.coef!=0]
 summary(lasso.out)
 
-mse_ridge
-mse_lasso
+mean_mse_ridge = mean(mse_ridge)
+mean_mse_lasso = mean(mse_lasso)
 
 
 
@@ -125,14 +128,25 @@ mse_lasso
 # regression tree
 library (randomForest)
 
+length <- 10
+mse_tree <- rep(NA, length)
+for (i in 1:2) {
 #split data into training set and testing set
 tree_train = sample(dim(covid_clean)[1],dim(covid_clean)[1]*0.7)
-tree.train=covid_clean[tree_train, ]
-tree.test=covid_clean[-tree_train,]
+tree.train = covid_clean[tree_train, ]
+tree.test = covid_clean[-tree_train,]
 
 bag.covid = randomForest(GDPCAP~.,data=tree.train, mtry=4, importance =TRUE)
 bag.covid
 importance(bag.covid)
 
 yhat.bag = predict(bag.covid,newdata = tree.test)
-mean((yhat.bag - tree.test$GDPCAP)^2)
+mse_tree[i] = mean((yhat.bag - tree.test$GDPCAP)^2)
+}
+
+mse_tree
+
+
+
+
+
