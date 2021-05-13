@@ -1,0 +1,7 @@
+     HDI,      TC,      TD,     STI,    GDPCAP
+Min.   :0.0000  ,Min.   : 0.000  ,Min.   : 0.000  ,Min.   :0.000  ,Min.   : 0.000  
+1st Qu.:0.6010  ,1st Qu.: 4.673  ,1st Qu.: 0.000  ,1st Qu.:3.324  ,1st Qu.: 8.421  
+Median :0.7520  ,Median : 7.578  ,Median : 3.664  ,Median :4.050  ,Median : 9.492  
+Mean   :0.7201  ,Mean   : 7.102  ,Mean   : 3.730  ,Mean   :3.372  ,Mean   : 9.154  
+3rd Qu.:0.8470  ,3rd Qu.: 9.828  ,3rd Qu.: 5.966  ,3rd Qu.:4.354  ,3rd Qu.:10.267  
+Max.   :0.9530  ,Max.   :15.914  ,Max.   :12.300  ,Max.   :4.605  ,Max.   :11.669  
