@@ -217,9 +217,10 @@ RMSE = sqrt(SSE/nrow(df))
 
 
 # Regression tree ---------------------------------------------------------
-# regression tree
+# regression tree, bagging
 library (randomForest)
 
+# GDPCAP as dependent variable
 length <- 10
 mse_tree <- rep(NA, length)
 for (i in 1:2) {
@@ -238,7 +239,7 @@ mse_tree[i] = mean((yhat.bag - tree.test$GDPCAP)^2)
 
 mse_tree
 
-
+# HDI as dependent variable
 length <- 10
 mse_tree2 <- rep(NA, length)
 for (i in 1:2) {
@@ -258,12 +259,91 @@ for (i in 1:2) {
 mse_tree2
 
 
-
+# Boosting ----------------------------------------------------------------
 library (gbm)
-set.seed (1)
-boost.GDP = gbm(GDPCAP???.,data= tree2.train, distribution= "gaussian", n.trees =5000 , interaction.depth = 4)
+
+# run a basic GBM model, GDPCAP as response
+set.seed(123)  
+BoostGDP <- gbm(formula = GDPCAP ~ ., data = boosting.train, distribution = "gaussian", n.trees = 5000,
+  shrinkage = 0.1, interaction.depth = 4, n.minobsinnode = 10, cv.folds = 10)
+
+# find index for number trees with minimum CV error
+best <- which.min(BoostGDP$cv.error) #best=4998
+
+# get MSE and compute RMSE
+sqrt(BoostGDP$cv.error[best])
+# plot error curve
+gbm.perf(BoostGDP, method = "cv")
+
+
+
+# run a basic GBM model, HDI as response
+set.seed(123)  
+BoostHDI <- gbm(formula = HDI ~ ., data = boosting.train, distribution = "gaussian", n.trees = 5000,
+  shrinkage = 0.1, interaction.depth = 4, n.minobsinnode = 10, cv.folds = 10 )
+
+# find index for number trees with minimum CV error
+best <- which.min(BoostHDI$cv.error) #best=4987
+
+# get MSE and compute RMSE
+sqrt(BoostHDI$cv.error[best])
+# plot error curve
+gbm.perf(BoostHDI, method = "cv")
+
+
+
+## GDPCAP as response
+
+length <- 10
+mse_boosting <- rep(NA, length)
+
+
+for (i in 1:10) {
+  
+  boosting_train = sample(dim(covid_clean)[1],dim(covid_clean)[1]*0.7)
+  boosting.train = covid_clean[boosting_train, ]
+  boosting.test = covid_clean[-boosting_train,]
+  
+  set.seed (i)
+  boost.GDP = gbm(GDPCAP~.,data= boosting.train, distribution= "gaussian", n.trees =5000 , interaction.depth = 4)
+
+  yhat.boosting = predict(boost.GDP,newdata = boosting.test)
+
+  mse_boosting[i] = mean((yhat.boosting - boosting.test$GDPCAP)^2)
+}
+
+mean_mse_boosting = mean(mse_boosting)
 summary(boost.GDP)
 par(mfrow =c(1,2))
 plot(boost.GDP ,i="HDI")
-plot(boost.GDP ,i="STI")
+plot(boost.GDP ,i="TC")
+
+
+
+
+## HDI as response
+length <- 10
+mse2_boosting <- rep(NA, length)
+
+
+for (i in 1:10) {
+  set.seed (i)
+  
+  boosting2_train = sample(dim(covid_clean)[1],dim(covid_clean)[1]*0.7)
+  boosting2.train = covid_clean[boosting2_train, ]
+  boosting2.test = covid_clean[-boosting2_train,]
+  
+  boost.HDI = gbm(HDI~.,data= boosting2.train, distribution= "gaussian", n.trees =5000 , interaction.depth = 4)
+  
+  yhat.boosting2 = predict(boost.HDI,newdata = boosting2.test)
+  
+  mse2_boosting[i] = mean((yhat.boosting2 - boosting2.test$HDI)^2)
+}
+
+mean_mse2_boosting = mean(mse2_boosting)
+summary(boost.HDI)
+par(mfrow =c(1,2))
+plot(boost.HDI ,i="TD")
+plot(boost.HDI ,i="GDPCAP")
+
 
