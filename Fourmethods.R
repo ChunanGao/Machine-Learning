@@ -242,7 +242,7 @@ mean_mse_bag= mean(mse_bag)
 length <- 10
 mse_bag2 <- rep(NA, length)
 
-for (i in 1:2) {
+for (i in 1:10) {
   #split data into training set and testing set
   bag2_train = sample(dim(covid_clean)[1],dim(covid_clean)[1]*0.7)
   bag2.train = covid_clean[bag2_train, ]
